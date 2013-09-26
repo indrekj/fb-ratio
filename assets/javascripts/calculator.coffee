@@ -21,11 +21,10 @@ jQuery ->
         window.location = encodeURI("https://www.facebook.com/dialog/oauth?client_id=#{appId}&redirect_uri=#{uri}&response_type=token&scope=user_events")
 
 initializeLoggedInPage = ->
-  EventMembersCollection.upcoming (eventMembers) ->
-    showEvents(eventMembers.eventIds())
+  showEvents()
 
-showEvents = (eventIds) ->
-  Event.findByIds eventIds, (events) ->
+showEvents = ->
+  Repository.upcomingEventsForMe (events) ->
     renderEvent(event) for event in events
 
 renderEvent = (event) ->
@@ -33,10 +32,6 @@ renderEvent = (event) ->
   container.find("h2").html(event.name)
   container.appendTo("#events")
 
-  event.attendees (attendees) ->
-    renderRatio(attendees.ids(), container)
-
-renderRatio = (ids, container) ->
-  UsersCollection.findByIds ids, (users) ->
-    container.find(".menCount").html(users.menCount())
-    container.find(".womenCount").html(users.womenCount())
+  Repository.attendingEventMembers event.id, (attendees) ->
+    container.find(".menCount").html(attendees.menCount())
+    container.find(".womenCount").html(attendees.womenCount())
